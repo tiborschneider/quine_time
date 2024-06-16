@@ -1,5 +1,7 @@
 use std::time::*;
-const F: [u32; 11] = [31599, 5961, 25255, 29647, 23497, 31118, 14831, 29332, 31727, 31694, 1040];
+const F: [u32; 11] = [
+    31599, 5961, 25255, 29647, 23497, 31118, 14831, 29332, 31727, 31694, 1040,
+];
 
 fn p(d: [u32; 8], x: &mut usize, y: &mut usize, c: char) {
     let mut col = false;
@@ -8,7 +10,7 @@ fn p(d: [u32; 8], x: &mut usize, y: &mut usize, c: char) {
         let dy = (*y - 2) / 2;
         let di = dx / 4;
         let ddx = dx % 4;
-        col = di < 8 && ddx < 3&& dy < 5 && (d[di] >> (2 - ddx) + (4 - dy) * 3) & 1 == 1;
+        col = di < 8 && ddx < 3 && dy < 5 && (d[di] >> (2 - ddx) + (4 - dy) * 3) & 1 == 1;
     }
     if col {
         print!("\x1b[47m{c}")
@@ -40,13 +42,14 @@ fn main() {
         d[6] = F[t % 60 / 10];
         d[7] = F[t % 10];
 
-
         let mut x = 0;
         let mut y = 0;
         for c in S.chars() {
             if Some(c) == char::from_u32(63) {
                 for c in S.chars() {
-                    if c == '"' || c == '\\' {p(d, &mut x, &mut y, '\\')}
+                    if c == '"' || c == '\\' {
+                        p(d, &mut x, &mut y, '\\')
+                    }
                     p(d, &mut x, &mut y, c)
                 }
             } else {
