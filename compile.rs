@@ -1,13 +1,19 @@
+use std::env;
 use std::io::prelude::*;
 
-const MAX_WIDTH: usize = 133;
-
 fn main() {
-    let input = "quine.rs";
-    let output = "quine_compiled.rs";
+    let name = env::args().skip(1).next().unwrap();
+    let width = env::args()
+        .skip(2)
+        .next()
+        .unwrap()
+        .parse::<usize>()
+        .unwrap();
+    let input = format!("{name}.rs");
+    let output = format!("{name}_quine.rs");
 
     let prog = std::fs::read_to_string(input).unwrap();
-    let prog = format_prog(&prog);
+    let prog = format_prog(&prog, width);
     let prog = quine_prog(&prog);
     let mut file = std::fs::OpenOptions::new()
         .create(true)
@@ -22,12 +28,12 @@ fn special(c: char) -> bool {
     c.is_alphanumeric() || matches!(c, '_' | '!' | '\'')
 }
 
-fn format_prog(prog: &str) -> String {
+fn format_prog(prog: &str, max_width: usize) -> String {
     let mut prev_char = ';';
     let mut out = String::new();
     let mut width = 0;
     for part in prog.split_whitespace() {
-        if (width > 0 && width + part.len() > MAX_WIDTH) || part == "\"?\";" {
+        if (width > 0 && width + part.len() > max_width) || part == "\"?\";" {
             out.push('\n');
             width = 0;
             prev_char = ';';

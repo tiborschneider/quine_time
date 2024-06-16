@@ -1,3 +1,5 @@
 compile
-quine
-quine_compiled.rs
+time
+time_quine.rs
+matrix
+matrix_quine.rs
