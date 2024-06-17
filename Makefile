@@ -7,14 +7,14 @@ time: time_quine.rs
 	mv time_quine time
 
 time_quine.rs: compile time.rs
-	./compile time 133
+	./compile time 132
 
 matrix: matrix_quine.rs
 	rustc matrix_quine.rs
 	mv matrix_quine matrix
 
 matrix_quine.rs: compile matrix.rs
-	./compile matrix 150
+	./compile matrix 122
 
 compile: compile.rs
 	rustc compile.rs

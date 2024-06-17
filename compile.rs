@@ -32,8 +32,13 @@ fn format_prog(prog: &str, max_width: usize) -> String {
     let mut prev_char = ';';
     let mut out = String::new();
     let mut width = 0;
-    for part in prog.split_whitespace() {
-        if (width > 0 && width + part.len() > max_width) || part == "\"?\";" {
+    for part in prog
+        .split_whitespace()
+        .flat_map(|p| Splitter::new(p))
+        .map(|p| p.trim())
+        .filter(|p| !p.is_empty())
+    {
+        if (width > 0 && width + part.len() > max_width) || part == "\"?\"" {
             out.push('\n');
             width = 0;
             prev_char = ';';
@@ -53,8 +58,54 @@ fn format_prog(prog: &str, max_width: usize) -> String {
     out
 }
 
+struct Splitter<'a> {
+    d: &'a str,
+    sep: Option<&'a str>,
+    pat: &'static [&'static str],
+}
+
+impl<'a> Splitter<'a> {
+    fn new(d: &'a str) -> Self {
+        Self {
+            d,
+            sep: None,
+            pat: &["::", ":", ",", "(", ")", "..", ".", "|", ";", "?"],
+        }
+    }
+}
+
+impl<'a> Iterator for Splitter<'a> {
+    type Item = &'a str;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if let Some(sep) = self.sep.take() {
+            return Some(sep);
+        }
+        if let Some((pat, _)) = self
+            .pat
+            .iter()
+            .filter_map(|p| self.d.find(p).map(|x| (p, x)))
+            .min_by(|(ap, al), (bp, bl)| al.cmp(bl).then(bp.len().cmp(&ap.len())))
+        {
+            let Some((left, right)) = self.d.split_once(*pat) else {
+                unreachable!()
+            };
+            self.sep = Some(pat);
+            self.d = right;
+            return Some(left);
+        }
+        // if we reach this point, but d is non-empty, then no pattern has matched.
+        if !self.d.is_empty() {
+            let d = self.d;
+            self.d = "";
+            return Some(d);
+        }
+        None
+    }
+}
+
 fn quine_prog(prog: &str) -> String {
     let escaped_prog = prog.replace('\\', "\\\\");
     let escaped_prog = escaped_prog.as_str().replace('"', "\\\"");
-    prog.replacen('?', &escaped_prog.trim(), 1)
+    prog.replacen('~', &escaped_prog.trim(), 1)
 }

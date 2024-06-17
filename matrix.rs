@@ -1,12 +1,18 @@
-use std::{fs::*, io::*, thread::*, time::*};
+use std::{
+    fs::*,
+    io::{self, *},
+    thread::*,
+    time::*,
+};
 
 fn p(d: &Vec<Vec<u8>>, x: &mut usize, y: &mut usize, c: char) {
-    let col = match d[*y][*x] {
-        2 => "\x1b[1m\x1b[92m",
-        1 => "\x1b[1m\x1b[32m",
-        _ => "\x1b[21m\x1b[90m",
+    let z = "\x1b[";
+    let (a, b) = match d[*y][*x] {
+        2 => (1, 92),
+        1 => (1, 32),
+        _ => (21, 90),
     };
-    print!("{col}{c}");
+    print!("{}{}m{}{}m{}", z, a, z, b, c);
     *x += 1;
     if c == '\n' {
         *x = 0;
@@ -14,10 +20,10 @@ fn p(d: &Vec<Vec<u8>>, x: &mut usize, y: &mut usize, c: char) {
     }
 }
 
-fn main() {
+fn main() -> io::Result<()> {
+    let mut rng = File::open("/dev/urandom")?;
     let d = vec![0u8; 256];
     let mut d: Vec<_> = std::iter::repeat(&d).take(20).cloned().collect();
-    let mut rng = File::open("/dev/urandom").unwrap();
     let mut b = [0];
 
     loop {
@@ -29,7 +35,7 @@ fn main() {
         }
 
         for _ in 0..10 {
-            rng.read_exact(&mut b).unwrap();
+            rng.read_exact(&mut b)?;
             row[b[0] as usize] = 2u8;
         }
 
@@ -41,7 +47,7 @@ fn main() {
         let mut x = 0;
         let mut y = 0;
         for c in S.chars() {
-            if Some(c) == char::from_u32(63) {
+            if Some(c) == char::from_u32(126) {
                 for c in S.chars() {
                     if c == '"' || c == '\\' {
                         p(&d, &mut x, &mut y, '\\')
@@ -55,6 +61,8 @@ fn main() {
         println!("\x1b[0m");
         sleep(Duration::from_millis(99))
     }
+
+    Ok(())
 }
 
-const S: &str = "?";
+const S: &str = "~";

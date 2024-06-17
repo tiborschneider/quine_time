@@ -2,6 +2,7 @@ use std::time::*;
 const F: [u32; 11] = [
     31599, 5961, 25255, 29647, 23497, 31118, 14831, 29332, 31727, 31694, 1040,
 ];
+const E: &str = "\x1b[";
 
 fn p(d: [u32; 8], x: &mut usize, y: &mut usize, c: char) {
     let mut col = false;
@@ -12,11 +13,7 @@ fn p(d: [u32; 8], x: &mut usize, y: &mut usize, c: char) {
         let ddx = dx % 4;
         col = di < 8 && ddx < 3 && dy < 5 && (d[di] >> (2 - ddx) + (4 - dy) * 3) & 1 == 1;
     }
-    if col {
-        print!("\x1b[47m{c}")
-    } else {
-        print!("\x1b[49m{c}")
-    }
+    print!("{E}{}m{c}", if col { 47 } else { 49 });
     *x += 1;
     if c == '\n' {
         *x = 0;
@@ -29,7 +26,7 @@ fn main() {
     d[2] = F[10];
     d[5] = F[10];
     loop {
-        print!("\x1b[2J\x1b[1;1H\x1b[90m");
+        print!("{E}2J{E}1;1H{E}90m");
         let t = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .unwrap()
@@ -45,7 +42,7 @@ fn main() {
         let mut x = 0;
         let mut y = 0;
         for c in S.chars() {
-            if Some(c) == char::from_u32(63) {
+            if Some(c) == char::from_u32(126) {
                 for c in S.chars() {
                     if c == '"' || c == '\\' {
                         p(d, &mut x, &mut y, '\\')
@@ -61,4 +58,4 @@ fn main() {
     }
 }
 
-const S: &str = "?";
+const S: &str = "~";
